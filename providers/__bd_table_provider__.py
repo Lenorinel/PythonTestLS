@@ -1,0 +1,100 @@
+import sqlite3
+
+from helpers.__data_for_tables__ import get_ship_data, get_hull_data, get_weapon_data, get_engine_data, \
+    get_ship_data_change
+
+
+class Connection:
+
+    def __init__(self, connection):
+        self.connection = connection
+
+
+    def get_all_rows(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM ships;")
+        results = cursor.fetchall()
+        return results
+
+    def create_ships_table(self):
+        self.connection.cursor().execute("""CREATE TABLE IF NOT EXISTS ships(
+        ship TEXT PRIMARY KEY,
+        weapon TEXT,
+        hull TEXT,
+        engine TEXT)
+        """)
+        self.connection.commit()
+
+    def create_weapons_table(self):
+        self.connection.cursor().execute("""CREATE TABLE IF NOT EXISTS weapons(
+        weapon TEXT PRIMARY KEY,
+        reload_speed INT,
+        rotational_speed INT,
+        diameter INT,
+        power_volley INT,
+        count INT)
+        """)
+        self.connection.commit()
+
+    def create_hulls_table(self):
+        self.connection.cursor().execute("""CREATE TABLE IF NOT EXISTS hulls(
+        hulls TEXT PRIMARY KEY,
+        armor INT,
+        type INT,
+        capacity INT)
+        """)
+        self.connection.commit()
+
+    def create_engines_table(self):
+        self.connection.cursor().execute("""CREATE TABLE IF NOT EXISTS engines(
+        engine TEXT PRIMARY KEY,
+        power INT,
+        type INT)
+        """)
+        self.connection.commit()
+
+    def insert_ships_data(self, list):
+        self.connection.cursor().executemany("INSERT INTO ships VALUES(?,?,?,?);", list)
+        self.connection.commit()
+
+    def insert_weapons_data(self, list):
+        self.connection.cursor().executemany("INSERT INTO weapons VALUES(?,?,?,?,?,?);", list)
+        self.connection.commit()
+
+    def insert_hulls_data(self, list):
+        self.connection.cursor().executemany("INSERT INTO hulls VALUES(?,?,?,?);", list)
+        self.connection.commit()
+
+
+    def insert_engines_data(self, list):
+        self.connection.cursor().executemany("INSERT INTO engines VALUES(?,?,?);", list)
+        self.connection.commit()
+
+    def drop_ships_table(self, tables_list):
+        for table_name in tables_list:
+            self.connection.cursor().execute("DROP TABLE IF EXISTS " + table_name + ";")
+
+    def update_ships_table(self):
+        pair_for_change = get_ship_data_change()
+        for pair in pair_for_change:
+            self.connection.cursor().execute("""UPDATE ships set weapon = ? where ship = ?;""", pair)
+
+
+
+def initialize_tables(conObj):
+    Connection.create_ships_table(conObj)
+    Connection.create_engines_table(conObj)
+    Connection.create_hulls_table(conObj)
+    Connection.create_weapons_table(conObj)
+
+
+def add_data_in_tables(conObj):
+    Connection.insert_ships_data(conObj, get_ship_data())
+    Connection.insert_hulls_data(conObj, get_hull_data())
+    Connection.insert_weapons_data(conObj, get_weapon_data())
+    Connection.insert_engines_data(conObj, get_engine_data())
+
+
+def delete_all_tables():
+    tables_list = ['ships', 'weapons', 'engines', 'hulls']
+    Connection.drop_ships_table(tables_list)
