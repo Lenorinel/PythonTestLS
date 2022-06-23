@@ -16,6 +16,12 @@ class Connection:
         results = cursor.fetchall()
         return results
 
+    def get_ship_weapon(self, ship_id):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT weapon FROM ships WHERE ship = \'" + ship_id + "\';")
+        result = cursor.fetchone()
+        return result
+
     def create_ships_table(self):
         self.connection.cursor().execute("""CREATE TABLE IF NOT EXISTS ships(
         ship TEXT PRIMARY KEY,
@@ -77,8 +83,17 @@ class Connection:
     def update_ships_table(self):
         pair_for_change = get_ship_data_change()
         for pair in pair_for_change:
-            self.connection.cursor().execute("""UPDATE ships set weapon = ? where ship = ?;""", pair)
+            param_for_update, param_value, ship_id = pair
+            # self.connection.cursor().execute("UPDATE ships SET ? = ? WHERE ship = ?;", pair)
+            print("UPDATE ships SET " + param_for_update + " = " + param_value + " WHERE ship = " + ship_id + ";")
+            self.connection.cursor().execute("UPDATE ships SET " + param_for_update + " = \'" + param_value + "\' WHERE ship = \'" + ship_id + "\';")
+            self.connection.commit()
 
+    def select_ships_id(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT ship FROM ships;")
+        results = cursor.fetchall()
+        return results
 
 
 def initialize_tables(conObj):
@@ -94,7 +109,10 @@ def add_data_in_tables(conObj):
     Connection.insert_weapons_data(conObj, get_weapon_data())
     Connection.insert_engines_data(conObj, get_engine_data())
 
+def get_all_ships_id(conObj):
+   result = Connection.select_ships_id(conObj)
+   return result
 
-def delete_all_tables():
+def delete_all_tables(conObj):
     tables_list = ['ships', 'weapons', 'engines', 'hulls']
-    Connection.drop_ships_table(tables_list)
+    Connection.drop_ships_table(conObj, tables_list)
