@@ -1,7 +1,7 @@
 import sqlite3
 
 from helpers.__data_for_tables__ import get_ship_data, get_hull_data, get_weapon_data, get_engine_data, \
-    get_ship_data_change
+    get_ship_data_change, get_weapons_data_change
 
 
 class Connection:
@@ -19,6 +19,12 @@ class Connection:
     def get_ship_weapon(self, ship_id):
         cursor = self.connection.cursor()
         cursor.execute("SELECT weapon FROM ships WHERE ship = \'" + ship_id + "\';")
+        result = cursor.fetchone()
+        return result
+
+    def get_weapon_param(self, weapon_id):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM weapons WHERE weapon = \'" + weapon_id + "\';")
         result = cursor.fetchone()
         return result
 
@@ -84,9 +90,14 @@ class Connection:
         pair_for_change = get_ship_data_change()
         for pair in pair_for_change:
             param_for_update, param_value, ship_id = pair
-            # self.connection.cursor().execute("UPDATE ships SET ? = ? WHERE ship = ?;", pair)
-            print("UPDATE ships SET " + param_for_update + " = " + param_value + " WHERE ship = " + ship_id + ";")
             self.connection.cursor().execute("UPDATE ships SET " + param_for_update + " = \'" + param_value + "\' WHERE ship = \'" + ship_id + "\';")
+            self.connection.commit()
+
+    def update_weapons_table(self):
+        pair_for_change = get_weapons_data_change()
+        for pair in pair_for_change:
+            param_for_update, param_value, weapon_id = pair
+            self.connection.cursor().execute("UPDATE weapons SET " + param_for_update + " = \'" + str(param_value) + "\' WHERE weapon = \'" + weapon_id + "\';")
             self.connection.commit()
 
     def select_ships_id(self):
@@ -108,6 +119,10 @@ def add_data_in_tables(conObj):
     Connection.insert_hulls_data(conObj, get_hull_data())
     Connection.insert_weapons_data(conObj, get_weapon_data())
     Connection.insert_engines_data(conObj, get_engine_data())
+
+def randomize_temp_table(con):
+    Connection.update_weapons_table(con)
+    Connection.update_ships_table(con)
 
 def get_all_ships_id(conObj):
    result = Connection.select_ships_id(conObj)

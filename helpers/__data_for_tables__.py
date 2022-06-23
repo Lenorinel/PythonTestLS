@@ -50,3 +50,31 @@ def get_ship_data_change():
         ship_data_change.append(cort)
         i += 1
     return ship_data_change
+
+def get_weapons_data_change():
+    weapons_param = get_weapons_param()
+    weapons_data_change = []
+    i = 1
+    while i < 21:
+        weapon_param = weapons_param[randint(0,4)]
+        cort = weapon_param, randint(1, 20), 'weapon' + str(i)
+        weapons_data_change.append(cort)
+        i += 1
+    return weapons_data_change
+
+def get_hulls_data_change():
+    hulls_param = get_hulls_param()
+    hull_data_change = []
+    i = 1
+    while i < 5:
+        hull_param = hulls_param[randint(0, 2)]
+        cort = hull_param, randint(1,20), 'hull' + str(i)
+        hull_data_change.append(cort)
+        i += 1
+    return hull_data_change
+
+def get_hulls_param():
+    return ["armor", "type", "capacity"]
+
+def get_weapons_param():
+    return ["reload_speed", "rotational_speed", "diameter", "power_volley", "count"]
